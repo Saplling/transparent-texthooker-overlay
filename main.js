@@ -3,6 +3,13 @@ const { ipcMain } = require("electron");
 const fs = require("fs");
 const path = require('path');
 
+const isPortable = process.argv.includes('--portable');
+
+if (isPortable) {
+  const exeDir = path.dirname(app.getPath('exe'));
+  app.setPath('userData', path.join(exeDir, 'userdata'));
+}
+
 const settingsPath = path.join(app.getPath('userData'), 'settings.json');
 let userSettings = {
   "fontSize": 42,
