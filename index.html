@@ -27,23 +27,23 @@ background: rgba(202, 12, 12, 0.692);
     overflow: auto;
   }
 
-#resize-handle {
-  opacity: 0;
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  right: 0;
-  bottom: 0;
-  transform: rotate(180deg);
- background:
-    linear-gradient(135deg, transparent 45%, #aaa 45%, #aaa 55%, transparent 55%),
-    linear-gradient(135deg, transparent 25%, #aaa 25%, #aaa 35%, transparent 35%),
-    linear-gradient(135deg, transparent 5%, #aaa 5%, #aaa 15%, transparent 15%);
-  background-repeat: no-repeat;
-  background-position: bottom right;
-  cursor: se-resize;
-  pointer-events: auto;
-}
+  #resize-handle {
+    opacity: 0;
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    right: 0;
+    bottom: 0;
+    transform: rotate(180deg);
+    background:
+      linear-gradient(135deg, transparent 45%, #aaa 45%, #aaa 55%, transparent 55%),
+      linear-gradient(135deg, transparent 25%, #aaa 25%, #aaa 35%, transparent 35%),
+      linear-gradient(135deg, transparent 5%, #aaa 5%, #aaa 15%, transparent 15%);
+    background-repeat: no-repeat;
+    background-position: bottom right;
+    cursor: se-resize;
+    pointer-events: auto;
+  }
 
   #draggable {
     height: 30px;
@@ -58,7 +58,7 @@ background: rgba(202, 12, 12, 0.692);
     position: fixed;
     left: 50%;
     top: 70%;
-    
+
   }
 
   .faded {
@@ -71,9 +71,10 @@ background: rgba(202, 12, 12, 0.692);
     color: white;
     transition: opacity 0.3s ease;
   }
+
   #main-box:hover #resize-handle {
-  opacity: 1;
-}
+    opacity: 1;
+  }
 
   .control-btn {
     background: transparent;
@@ -117,95 +118,108 @@ background: rgba(202, 12, 12, 0.692);
     <div draggable="false" id="resize-handle" class="interactive half-interactive"></div>
   </div>
 
-<script>
-window.addEventListener('yomitan-popup-shown', () => {
-  ipcRenderer.send('yomitan-event', true);
-});
-window.addEventListener('yomitan-popup-hidden', () => {
-  ipcRenderer.send('yomitan-event', false);
-});
-</script>
+  <script>
+    window.addEventListener('yomitan-popup-shown', () => {
+      ipcRenderer.send('yomitan-event', true);
+    });
+    window.addEventListener('yomitan-popup-hidden', () => {
+      ipcRenderer.send('yomitan-event', false);
+    });
+  </script>
 
-<script>
-const textElement = document.getElementById("text");
-const handle = document.getElementById("resize-handle");
+  <script>
+    const textElement = document.getElementById("text");
+    const handle = document.getElementById("resize-handle");
 
-let isResizing = false;
-let startX, startY, startWidth, startHeight;
+    let isResizing = false;
+    let startX, startY, startWidth, startHeight;
 
-handle.addEventListener("mousedown", (e) => {
-  isResizing = true;
-  startX = e.clientX;
-  startY = e.clientY;
-  const rect = textElement.getBoundingClientRect();
-  startWidth = rect.width;
-  startHeight = rect.height;
-  document.addEventListener("mousemove", resize);
-  document.addEventListener("mouseup", stopResize, { once: true });
-});
+    handle.addEventListener("mousedown", (e) => {
+      isResizing = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = textElement.getBoundingClientRect();
+      startWidth = rect.width;
+      startHeight = rect.height;
+      document.addEventListener("mousemove", resize);
+      document.addEventListener("mouseup", stopResize, { once: true });
+    });
 
-function resize(e) {
-  if (!isResizing) return;
-  const newWidth = startWidth + (e.clientX - startX);
-  const newHeight = startHeight + (e.clientY - startY);
-  textElement.style.width = newWidth + "px";
-  textElement.style.height = newHeight + "px";
-}
+    function resize(e) {
+      if (!isResizing) return;
+      const newWidth = startWidth + (e.clientX - startX);
+      const newHeight = startHeight + (e.clientY - startY);
+      textElement.style.width = newWidth + "px";
+      textElement.style.height = newHeight + "px";
+    }
 
-function stopResize() {
-  isResizing = false;
-  document.removeEventListener("mousemove", resize);
-}
+    function stopResize() {
+      isResizing = false;
+      document.removeEventListener("mousemove", resize);
+    }
 
 
-</script>
+  </script>
 
-<script>
-  const { ipcRenderer } = require("electron");
-  const dragBar = document.getElementById("draggable");
-  const textEl = document.getElementById("text");
-  const mainBox = document.getElementById("main-box");
+  <script>
+    const { ipcRenderer } = require("electron");
+    const dragBar = document.getElementById("draggable");
+    const textEl = document.getElementById("text");
+    const mainBox = document.getElementById("main-box");
 
-  let isDragging = false;
-  let offsetX, offsetY;
+    let isDragging = false;
+    let offsetX, offsetY;
 
-  dragBar.addEventListener("mousedown", (e) => {
-    const rect = mainBox.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-    isDragging = true;
-    document.addEventListener("mousemove", onDrag);
-    document.addEventListener("mouseup", stopDrag, { once: true });
-  });
-  
-  function onDrag(e) {
-    if (!isDragging) return;
-    const newX = Math.max(0, Math.min(window.innerWidth - mainBox.offsetWidth, e.clientX - offsetX));
-    const newY = Math.max(0, Math.min(window.innerHeight - mainBox.offsetHeight, e.clientY - offsetY));
-    mainBox.style.left = `${newX}px`;
-    mainBox.style.top = `${newY}px`;
-  }
-  
-  function stopDrag() {
-    isDragging = false;
-    document.removeEventListener("mousemove", onDrag);
-  }
+    dragBar.addEventListener("mousedown", (e) => {
+      const rect = mainBox.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      isDragging = true;
+      document.addEventListener("mousemove", onDrag);
+      document.addEventListener("mouseup", stopDrag, { once: true });
+    });
+
+    function onDrag(e) {
+      if (!isDragging) return;
+      const newX = Math.max(0, Math.min(window.innerWidth - mainBox.offsetWidth, e.clientX - offsetX));
+      const newY = Math.max(0, Math.min(window.innerHeight - mainBox.offsetHeight, e.clientY - offsetY));
+      mainBox.style.left = `${newX}px`;
+      mainBox.style.top = `${newY}px`;
+    }
+
+    function stopDrag() {
+      isDragging = false;
+      document.removeEventListener("mousemove", onDrag);
+    }
 
 
     function setupWebSocket(weburl, isPrimary) {
-      let type ="ws1";
+      let type = "ws1";
       if (!isPrimary) {
         type = "ws2";
       }
-      if (window[type] && window[type].readyState !== WebSocket.CLOSED) {
-        window[type].onclose = () => {} // Remove the onclose handler so it doesn't fuck shit up once it finally closes
-        window[type].close();
+      if (window[type]) {
+        if (window[type].monitorInterval) {
+          clearInterval(window[type].monitorInterval)
+        }
+        if (window[type].readyState !== WebSocket.CLOSED) {
+          window[type].onclose = () => { } // Remove the onclose handler so it doesn't fuck shit up once it finally closes
+          window[type].close();
+        }
       }
       const websocket = new WebSocket(weburl);
       websocket.onclose = (event) => {
         ipcRenderer.send(`websocket-closed`, type)
+        websocket.monitorInterval = setInterval(() => {
+          console.log("Checking....")
+          if (websocket.readyState === WebSocket.CLOSED) {
+            setupWebSocket(weburl, isPrimary);
+            clearInterval(websocket.monitorInterval);
+          }
+        }, 5000);
       }
       websocket.onopen = (event) => {
+        if (websocket.monitorInterval) { clearInterval(websocket.monitorInterval) }
         ipcRenderer.send(`websocket-opened`, type)
       }
       websocket.onmessage = (event) => {
