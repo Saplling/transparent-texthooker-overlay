@@ -54,6 +54,8 @@ app.whenReady().then(async () => {
     },
     show: false,
   });
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  win.setAlwaysOnTop(true, "screen-saver")
   let resizeMode = false
   let yomitanShown = false
   ipcMain.on('set-ignore-mouse-events', (event, ignore, options) => {
