@@ -198,6 +198,7 @@ function stopResize() {
         type = "ws2";
       }
       if (window[type] && window[type].readyState !== WebSocket.CLOSED) {
+        window[type].onclose = () => {} // Remove the onclose handler so it doesn't fuck shit up once it finally closes
         window[type].close();
       }
       const websocket = new WebSocket(weburl);

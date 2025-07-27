@@ -56,6 +56,7 @@ app.whenReady().then(async () => {
   });
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   win.setAlwaysOnTop(true, "screen-saver")
+
   let resizeMode = false
   let yomitanShown = false
   ipcMain.on('set-ignore-mouse-events', (event, ignore, options) => {
@@ -75,17 +76,49 @@ app.whenReady().then(async () => {
   win.blur(); 
   setTimeout(() => win.focus(), 50); 
 });
+  const settingsWin = new BrowserWindow({
+    show: false,
+    width: 500,
+    height: 400,
+    resizable: true,
+    alwaysOnTop: true,
+    title: "Overlay Settings",
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+  });
+  settingsWin.loadFile("settings.html");
 
+  win.on("close", () => {
+    settingsWin.destroy()
+  })
 
-// Fix for ghost title bar
-// https://github.com/electron/electron/issues/39959#issuecomment-1758736966
+  settingsWin.removeMenu();
+  settingsWin.on("close", (e) => {
+    win.webContents.send("force-visible", false);
+    e.preventDefault();
+    settingsWin.hide()
+  })
+
+  settingsWin.webContents.send("preload-settings", userSettings)
+  ipcMain.on("websocket-closed", (event, type) => {
+    settingsWin.send("websocket-closed", type)
+  })
+  ipcMain.on("websocket-opened", (event, type) => {
+    console.log("opened")
+    settingsWin.send("websocket-opened", type);
+  })
+
+  // Fix for ghost title bar
+  // https://github.com/electron/electron/issues/39959#issuecomment-1758736966
   win.on('blur', () => {
-  win.setBackgroundColor('#00000000')
-})
+    win.setBackgroundColor('#00000000')
+  })
 
-win.on('focus', () => {
-  win.setBackgroundColor('#00000000')
-})
+  win.on('focus', () => {
+    win.setBackgroundColor('#00000000')
+  })
 
   win.loadFile('index.html');
   if (isDev) {
@@ -128,48 +161,12 @@ win.on('focus', () => {
   });
 
   ipcMain.on("open-settings", () => {
-    if (win && !win.isDestroyed()) {
-      win.webContents.send("force-visible", true); // ✅ Show overlay
+    if (settingsWin.isVisible()) {
+      settingsWin.close();
+      return;
     }
-    win.webContents.send("request-current-settings");
-    ipcMain.once("reply-current-settings", (event, settings) => {
-      const settingsWin = new BrowserWindow({
-        width: 500,
-        height: 400,
-        resizable: true,
-        alwaysOnTop: true,
-        title: "Overlay Settings",
-        webPreferences: {
-          nodeIntegration: true,
-          contextIsolation: false
-        },
-      });
-      settingsWin.removeMenu()
-      
-      settingsWin.loadFile("settings.html");
-      settingsWin.on("closed", () => {
-        if (win && !win.isDestroyed()) {
-          win.webContents.send("force-visible", false);
-        }
-      })
-      const closedListenerFunction = (event, type) => {
-        settingsWin.send("websocket-closed", type)
-      }
-      const openedListenerFunction = (event, type) => {
-        settingsWin.send("websocket-opened", type);
-      };
-      ipcMain.on("websocket-closed", closedListenerFunction)
-      ipcMain.on("websocket-opened", openedListenerFunction)
-      console.log(websocketStates)
-      settingsWin.webContents.send("preload-settings", {settings, websocketStates})
-      
-      settingsWin.on("closed", () => {
-        ipcMain.removeListener("websocket-closed", closedListenerFunction)
-        ipcMain.removeListener("websocket-opened", openedListenerFunction)
-      })
-    })
-
-
+    settingsWin.show()
+    win.webContents.send("force-visible", true);
   });
   ipcMain.on("fontsize-changed", (event, newsize) => {
     win.webContents.send("new-fontsize", newsize);
@@ -188,4 +185,10 @@ win.on('focus', () => {
   app.on("before-quit", () => {
     fs.writeFileSync(settingsPath, JSON.stringify(userSettings, null, 2))
   })
+  app.on('window-all-closed', () => {
+  // Only quit if not on macOS (common Electron pattern)
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
 });
