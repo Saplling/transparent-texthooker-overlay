@@ -2,20 +2,20 @@
 let isMouseOverInteractiveElement = false;
 
 window.addEventListener('DOMContentLoaded', () => {
-const interactiveElements = 
-document.querySelectorAll('.interactive');
+    const interactiveElements =
+        document.querySelectorAll('.interactive');
 
-interactiveElements.forEach((element) => {
-    element.addEventListener('mouseenter', () => {
-        isMouseOverInteractiveElement = true;
-        ipcRenderer.send('set-ignore-mouse-events', false);
-    });
-    if (!element.classList.contains("half-interactive")) {
+    interactiveElements.forEach((element) => {
+        element.addEventListener('mouseenter', () => {
+            isMouseOverInteractiveElement = true;
+            ipcRenderer.send('set-ignore-mouse-events', false);
+        });
+        if (!element.classList.contains("half-interactive")) {
             element.addEventListener('mouseleave', () => {
-        isMouseOverInteractiveElement = false;
-        ipcRenderer.send('set-ignore-mouse-events', true, { forward: true });
-    });
-    }
+                isMouseOverInteractiveElement = false;
+                ipcRenderer.send('set-ignore-mouse-events', true, { forward: true });
+            });
+        }
 
-});
+    });
 });

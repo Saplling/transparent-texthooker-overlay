@@ -66,17 +66,23 @@ app.whenReady().then(async () => {
 
   let resizeMode = false
   let yomitanShown = false
-  ipcMain.on('set-ignore-mouse-events', (event, ignore, options) => {
+  let lastClickthroughState = null
+  const dealWithIngoreMouseEvents = (event, ignore, options) => {
+    lastClickthroughState = { ignore, options };
     if (!resizeMode && !yomitanShown) {
-      win.setIgnoreMouseEvents(ignore, options)
+      win.setIgnoreMouseEvents(ignore, options);
     }
-  })
+  };
+  ipcMain.on('set-ignore-mouse-events', dealWithIngoreMouseEvents)
   ipcMain.on("resize-mode", (event, state) => {
     resizeMode = state;
   })
 
   ipcMain.on("yomitan-event", (event, state) => {
     yomitanShown = state;
+    if (!yomitanShown && lastClickthroughState != null) {
+      dealWithIngoreMouseEvents(event, lastClickthroughState.ignore, lastClickthroughState.options);
+    }
   })
 
   ipcMain.on('release-mouse', () => {
@@ -113,7 +119,6 @@ app.whenReady().then(async () => {
     settingsWin.send("websocket-closed", type)
   })
   ipcMain.on("websocket-opened", (event, type) => {
-    console.log("opened")
     settingsWin.send("websocket-opened", type);
   })
 

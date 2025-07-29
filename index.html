@@ -268,7 +268,6 @@ background: rgba(202, 12, 12, 0.692);
       textEl.style.fontSize = `${newsize}px`;
     })
     ipcRenderer.on("new-weburl1", (event, newurl) => {
-      console.log("yes")
       setupWebSocket(newurl, true)
     })
     ipcRenderer.on("new-weburl2", (event, newurl) => {
