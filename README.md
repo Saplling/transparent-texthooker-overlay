@@ -12,8 +12,8 @@ This is a transparent overlay that listens for websocket output and display it o
 
 # Demo
 
+https://github.com/user-attachments/assets/e03005be-0846-49a7-aa1a-feccd42fb6d6
 
-https://github.com/user-attachments/assets/efc3e127-93f2-41af-b237-be26df3141d6
 
 
 
