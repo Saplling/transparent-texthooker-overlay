@@ -2,7 +2,7 @@ const { app, BrowserWindow, session, screen } = require('electron');
 const { ipcMain } = require("electron");
 const fs = require("fs");
 const path = require('path');
-
+app.disableHardwareAcceleration()
 const isPortable = process.argv.includes('--portable');
 
 if (isPortable) {
